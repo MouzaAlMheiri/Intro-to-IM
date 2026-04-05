@@ -1,0 +1,47 @@
+//setting up to what wires I connected on the board so the code runs smoothly and connects to the board correctly
+const int switchPin = 2; // switch on pin 2
+const int digitalLED = 8; // on/off LED
+const int analogLED = 9; // PWM LED
+const int ldrPin = A0; // light sensor on A0
+
+int sensorValue = 0; //stores number from light sensor 
+int brightness = 0; //stores value so it can trasnlate to LED
+// both int are variables and act as containers to store the values 
+
+
+void setup() {
+  Serial.begin(9600); 
+
+  pinMode(switchPin, INPUT_PULLUP); //sets switch as input with internal pull up resistor 
+  pinMode(digitalLED, OUTPUT); // for on/off LED
+  pinMode(analogLED, OUTPUT); // for PWM brightness LED
+  //digital and analog each for one led
+} //runs once 
+
+void loop() {
+  // read switch
+  int switchState = digitalRead(switchPin);
+
+  // if statment so that the LED can be controlled digitally by switch
+  if (switchState == LOW) {
+    digitalWrite(digitalLED, HIGH);
+  } else {
+    digitalWrite(digitalLED, LOW);
+  }
+
+  // read light sensor
+  sensorValue = analogRead(ldrPin);
+  Serial.println(sensorValue);
+
+  // keep readings in my range
+  sensorValue = constrain(sensorValue, 330, 650);
+
+ //when its reads the ligh if its dark the LED will be bright and light the LED will be dimmer 
+  brightness = map(sensorValue, 330, 650, 255, 0);
+
+  // sets the analog LED brightness
+  analogWrite(analogLED, brightness);
+
+//arduino waits 30 miliseconds before running the loop again 
+  delay(30);
+}
