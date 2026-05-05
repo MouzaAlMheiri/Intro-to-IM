@@ -1,19 +1,19 @@
 #include <Keypad.h> //includes library 
 
-// LEDs
+//assign LEDs
 int redLED = 9;
 int greenLED = 10;
 
-// buttons
+//assign buttons
 int greenButton = 2;
 int blueButton = 3;
 int yellowButton = 4;
 int whiteButton = A2;
 
-// light sensor/card scanner
+//light sensor/card scanner
 int ldrPin = A0;
 
-// keypad setup it has 4 rows and 4 columns followed tutorial
+//keypad setup it has 4 rows and 4 columns followed tutorial
 const byte ROWS = 4;
 const byte COLS = 4;
 
@@ -28,13 +28,13 @@ char keys[ROWS][COLS] = {
 byte rowPins[4] = {5, 6, 7, 8};
 byte colPins[4] = {11, 12, 13, A1};
 
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); //creates keypad object yo read keys
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); //creates keypad object to read keys
 
 char lastKey = 'N';//stores the last key pressed
 unsigned long keyTime = 0;//when the key was pressed
 int keyHoldTime = 500;//how long the key stays "active" (ms)
 
-// this function fixes the keypad output because my keypad layout does not match the numbers I actually want to use in my project
+//this function fixes the keypad output because my keypad layout does not match the numbers I actually want to use in my project
 so I "translate" each raw key into the correct number
 char fixKey(char key) {
   if (key == '1') return '1';
