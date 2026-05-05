@@ -1,0 +1,113 @@
+#include <Keypad.h> //includes library 
+
+// LEDs
+int redLED = 9;
+int greenLED = 10;
+
+// buttons
+int greenButton = 2;
+int blueButton = 3;
+int yellowButton = 4;
+int whiteButton = A2;
+
+// light sensor/card scanner
+int ldrPin = A0;
+
+// keypad setup it has 4 rows and 4 columns followed tutorial
+const byte ROWS = 4;
+const byte COLS = 4;
+
+//laayout of keypad followed tutorial
+char keys[ROWS][COLS] = {
+  {'D', '#', '0', '*'},
+  {'C', '9', '8', '7'},
+  {'B', '6', '5', '4'},
+  {'A', '3', '2', '1'}
+};
+//pins for keypad 
+byte rowPins[4] = {5, 6, 7, 8};
+byte colPins[4] = {11, 12, 13, A1};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS); //creates keypad object yo read keys
+
+char lastKey = 'N';//stores the last key pressed
+unsigned long keyTime = 0;//when the key was pressed
+int keyHoldTime = 500;//how long the key stays "active" (ms)
+
+// this function fixes the keypad output because my keypad layout does not match the numbers I actually want to use in my project
+so I "translate" each raw key into the correct number
+char fixKey(char key) {
+  if (key == '1') return '1';
+  if (key == '4') return '2';
+  if (key == '7') return '3';
+
+  if (key == 'A') return '4';
+  if (key == 'B') return '5';
+  if (key == 'C') return '6';
+
+  if (key == '3') return '7';
+  if (key == '6') return '8';
+  if (key == '9') return '9';
+
+  return 'N'; //if it's not one of these, return N (means nothing)
+}
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(redLED, OUTPUT); //set the red LED pin as an output so I can turn it on and off
+  pinMode(greenLED, OUTPUT); //set the green LED pin as an output
+
+  pinMode(greenButton, INPUT_PULLUP); //set green button as input with internal pull-up, so it reads HIGH when not pressed and LOW when pressed
+  pinMode(blueButton, INPUT_PULLUP); //same idea for blue button
+  pinMode(yellowButton, INPUT_PULLUP); //same idea for yellow button
+  pinMode(whiteButton, INPUT_PULLUP); //same idea for white button
+}
+
+void loop() {
+  int ldrValue = analogRead(ldrPin); //reads light sensor value (0–1023) to know how bright or dark it is
+
+  int greenState = digitalRead(greenButton); //read if green button is pressed (LOW) or not pressed (HIGH)
+  int blueState = digitalRead(blueButton); //read blue button state
+  int yellowState = digitalRead(yellowButton);//read yellow button state
+  int whiteState = digitalRead(whiteButton);//read white button state
+
+  char key = keypad.getKey(); //check if any key on the keypad is pressed and stores it
+
+
+  if (key) {//if a key was actually pressed
+    lastKey = fixKey(key);//convert the raw keypad key into my custom mapped key using fixKey()
+    keyTime = millis();//save the current time so I know when this key was pressed
+  }
+
+   if (millis() - keyTime > keyHoldTime) {//if more than keyHoldTime milliseconds passed since last key press
+    lastKey = 'N';//reset lastKey to 'N' so it does not stay active forever
+  }
+
+//This part sets up the Arduino and then keeps repeating the main actions. Setup starts the serial connection and prepares the LED pins and button pins. The loop reads the light sensor, checks all button states, reads any keypad key, updates the last key, and sends all the values to the laptop in one line. It also listens for commands from the laptop to turn the LEDs on or off, and the small delay keeps the loop running smoothly.
+  Serial.print(ldrValue);
+  Serial.print(",");
+  Serial.print(greenState);
+  Serial.print(",");
+  Serial.print(blueState);
+  Serial.print(",");
+  Serial.print(yellowState);
+  Serial.print(",");
+  Serial.print(whiteState);
+  Serial.print(",");
+  Serial.println(lastKey);
+
+  if (Serial.available() > 0) { //check if the laptop sent any data back to the Arduino
+    char command = Serial.read(); //read one character command from the serial buffer
+
+    if (command == 'R') digitalWrite(redLED, HIGH); //if command is 'R', turn red LED on
+    if (command == 'r') digitalWrite(redLED, LOW); //if command is 'r', turn red LED off
+
+    if (command == 'G') digitalWrite(greenLED, HIGH); //if command is 'G', turn green LED on
+    if (command == 'g') digitalWrite(greenLED, LOW); //if command is 'g', turn green LED off
+  }
+
+
+  delay(30); //small delay 
+}
